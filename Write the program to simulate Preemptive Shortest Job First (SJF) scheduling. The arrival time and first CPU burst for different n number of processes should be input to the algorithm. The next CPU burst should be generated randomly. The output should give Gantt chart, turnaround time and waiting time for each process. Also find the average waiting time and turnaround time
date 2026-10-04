@@ -1,0 +1,134 @@
+Worked for a couple of seconds
+
+Page No. 18
+
+Q.1
+
+Write the program to simulate Preemptive Shortest Job First (SJF) scheduling.
+The arrival time and first CPU burst for different n number of processes should
+be input to the algorithm. The next CPU burst should be generated randomly.
+The output should give Gantt chart, turnaround time and waiting time for each
+process. Also find the average waiting time and turnaround time [15 Marks]
+
+Program Title: Preemptive Shortest Job First (SJF) Scheduling
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+struct Process {
+    int pid, at, bt, rt, ct, tat, wt;
+};
+
+int main() {
+    int n, time = 0, completed = 0;
+    struct Process p[20];
+
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    srand(time(0));
+
+    for (int i = 0; i < n; i++) {
+        p[i].pid = i + 1;
+
+        printf("Enter arrival time and first CPU burst for P%d: ",
+               i + 1);
+        scanf("%d%d", &p[i].at, &p[i].bt);
+
+        p[i].rt = p[i].bt;
+    }
+
+    printf("\nGantt Chart:\n");
+
+    while (completed < n) {
+        int index = -1;
+        int shortest = 99999;
+
+        for (int i = 0; i < n; i++) {
+            if (p[i].at <= time && p[i].rt > 0 &&
+                p[i].rt < shortest) {
+                shortest = p[i].rt;
+                index = i;
+            }
+        }
+
+        if (index == -1) {
+            time++;
+            continue;
+        }
+
+        printf("| P%d ", p[index].pid);
+
+        p[index].rt--;
+        time++;
+
+        if (p[index].rt == 0) {
+            p[index].ct = time;
+            p[index].tat = p[index].ct - p[index].at;
+            p[index].wt = p[index].tat - p[index].bt;
+            completed++;
+        }
+    }
+
+    printf("|\n");
+
+    float avgWT = 0, avgTAT = 0;
+
+    printf("\nPID\tAT\tBT\tCT\tTAT\tWT\n");
+
+    for (int i = 0; i < n; i++) {
+        printf("P%d\t%d\t%d\t%d\t%d\t%d\n",
+               p[i].pid, p[i].at, p[i].bt,
+               p[i].ct, p[i].tat, p[i].wt);
+
+        avgWT += p[i].wt;
+        avgTAT += p[i].tat;
+    }
+
+    printf("\nAverage Waiting Time = %.2f", avgWT / n);
+    printf("\nAverage Turnaround Time = %.2f\n", avgTAT / n);
+
+    return 0;
+}
+
+Q.3
+
+Write a C program to illustrate the concept of orphan process. Parent process
+creates a child and terminates before child has finished its task. So child process
+becomes orphan process. (Use fork(), sleep(), getpid(), getppid() [15 Marks]
+
+Program Title: Orphan Process
+
+#include <stdio.h>
+#include <unistd.h>
+
+int main() {
+    int pid = fork();
+
+    if (pid < 0) {
+        printf("Fork failed\n");
+        return 1;
+    }
+
+    if (pid == 0) {
+        printf("Child process started.\n");
+        printf("Child PID = %d\n", getpid());
+        printf("Parent PID = %d\n", getppid());
+
+        sleep(5);
+
+        printf("\nAfter parent terminates:\n");
+        printf("Child PID = %d\n", getpid());
+        printf("New Parent PID = %d\n", getppid());
+    } else {
+        printf("Parent process PID = %d\n", getpid());
+        printf("Parent process is terminating...\n");
+    }
+
+    return 0;
+}
+
+Q.3
+
+Oral/Viva [05 Marks]
