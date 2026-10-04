@@ -1,0 +1,117 @@
+SLIP 21
+Q.1 Question
+Write a simulation program for demand paging and show the page scheduling and total number of page faults according to the MFU page replacement algorithm. Assume the memory of n frames.
+Reference String: 8, 5, 7, 8, 5, 7, 2, 3, 7, 3, 5, 9, 4, 6, 2
+
+Solution
+#include <stdio.h>
+int main()
+{
+    int n, ref[] = {8,5,7,8,5,7,2,3,7,3,5,9,4,6,2};
+    int frame[20], freq[20] = {0};
+    int len = 15, i, j, pos, min, faults = 0, found;
+   printf("Enter number of frames: ");
+    scanf("%d", &n);
+    for(i = 0; i < n; i++)
+        frame[i] = -1;
+
+    printf("\nPage\tFrames\t\tStatus\n");
+
+    for(i = 0; i < len; i++)
+    {
+        found = 0;
+
+        for(j = 0; j < n; j++)
+        {
+            if(frame[j] == ref[i])
+            {
+                found = 1;
+                freq[j]++;
+                break;
+            }
+        }
+
+        if(!found)
+        {
+            faults++;
+
+            pos = -1;
+
+            for(j = 0; j < n; j++)
+            {
+                if(frame[j] == -1)
+                {
+                    pos = j;
+                    break;
+                }
+            }
+
+            if(pos == -1)
+            {
+                min = freq[0];
+                pos = 0;
+
+                for(j = 1; j < n; j++)
+                {
+                    if(freq[j] < min)
+                    {
+                        min = freq[j];
+                        pos = j;
+                    }
+                }
+            }
+
+            frame[pos] = ref[i];
+            freq[pos] = 1;
+        }
+
+        printf("%d\t", ref[i]);
+
+        for(j = 0; j < n; j++)
+            printf("%d ", frame[j]);
+
+        if(found)
+            printf("\tHit\n");
+        else
+            printf("\tPage Fault\n");
+    }
+
+    printf("\nTotal Page Faults = %d\n", faults);
+
+    return 0;
+}
+
+Q.2 Question
+Write a program that demonstrates the use of nice() system call. After a child process is started using fork(), assign higher priority to the child using nice() system call.
+Solution
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+int main()
+{
+    pid_t pid;
+
+    pid = fork();
+
+    if(pid < 0)
+    {
+        printf("Fork failed\n");
+    }
+    else if(pid == 0)
+    {
+        printf("Child Process\n");
+        printf("Child priority before nice(): %d\n", nice(0));
+
+        nice(-5);
+
+        printf("Child priority after nice(): %d\n", nice(0));
+    }
+    else
+    {
+        wait(NULL);
+        printf("Parent Process\n");
+    }
+
+    return 0;
+}
