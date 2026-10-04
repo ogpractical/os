@@ -1,0 +1,165 @@
+Worked for a couple of seconds
+
+Page No. 13
+
+Q.1
+
+Write the program to simulate Non-preemptive Shortest Job First (SJF) scheduling.
+The arrival time and first CPU burst for different n number of processes should
+be input to the algorithm. The next CPU-burst should be generated randomly. The
+output should give Gantt chart, turnaround time and waiting time for each process.
+Also find the average waiting time and turnaround time. [15 Marks]
+
+Program Title: Non-preemptive Shortest Job First (SJF) Scheduling
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+struct Process {
+    int pid, at, bt, ct, tat, wt, done;
+};
+
+int main() {
+    int n, time = 0, completed = 0;
+    struct Process p[20];
+
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    srand(time(0));
+
+    for (int i = 0; i < n; i++) {
+        p[i].pid = i + 1;
+        p[i].done = 0;
+
+        printf("Enter arrival time and first CPU burst for P%d: ",
+               i + 1);
+        scanf("%d%d", &p[i].at, &p[i].bt);
+    }
+
+    printf("\nGantt Chart:\n");
+
+    while (completed < n) {
+        int index = -1;
+        int shortest = 99999;
+
+        for (int i = 0; i < n; i++) {
+            if (!p[i].done && p[i].at <= time &&
+                p[i].bt < shortest) {
+                shortest = p[i].bt;
+                index = i;
+            }
+        }
+
+        if (index == -1) {
+            time++;
+            continue;
+        }
+
+        printf("| P%d ", p[index].pid);
+
+        time += p[index].bt;
+        p[index].ct = time;
+        p[index].tat = p[index].ct - p[index].at;
+        p[index].wt = p[index].tat - p[index].bt;
+        p[index].done = 1;
+
+        completed++;
+    }
+
+    printf("|\n");
+
+    float avgWT = 0, avgTAT = 0;
+
+    printf("\nPID\tAT\tBT\tCT\tTAT\tWT\n");
+
+    for (int i = 0; i < n; i++) {
+        printf("P%d\t%d\t%d\t%d\t%d\t%d\n",
+               p[i].pid, p[i].at, p[i].bt,
+               p[i].ct, p[i].tat, p[i].wt);
+
+        avgWT += p[i].wt;
+        avgTAT += p[i].tat;
+    }
+
+    printf("\nAverage Waiting Time = %.2f",
+           avgWT / n);
+    printf("\nAverage Turnaround Time = %.2f\n",
+           avgTAT / n);
+
+    return 0;
+}
+
+Q.2
+
+Write a simulation program for disk scheduling using LOOK algorithm.
+Accept total number of disk blocks, disk request string, and current head
+position from the user. isplay the list of requests in the order in which it is served.
+Also display the total number of head moments
+15, 30, 55, 90, 125, 140, 170
+Starting Head Position: 100
+Direction: Left
+[15 Marks]
+
+Program Title: LOOK Disk Scheduling
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int n, count, head, total = 0;
+    int req[50], temp;
+
+    printf("Enter total number of disk blocks: ");
+    scanf("%d", &n);
+
+    printf("Enter number of requests: ");
+    scanf("%d", &count);
+
+    printf("Enter disk request string:\n");
+    for (int i = 0; i < count; i++)
+        scanf("%d", &req[i]);
+
+    printf("Enter current head position: ");
+    scanf("%d", &head);
+
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = i + 1; j < count; j++) {
+            if (req[i] > req[j]) {
+                temp = req[i];
+                req[i] = req[j];
+                req[j] = temp;
+            }
+        }
+    }
+
+    printf("\nOrder of requests served:\n");
+
+    /* Direction: Left */
+    for (int i = count - 1; i >= 0; i--) {
+        if (req[i] <= head) {
+            printf("%d ", req[i]);
+            total += abs(head - req[i]);
+            head = req[i];
+        }
+    }
+
+    /* Then serve requests on right side */
+    for (int i = 0; i < count; i++) {
+        if (req[i] > head) {
+            printf("%d ", req[i]);
+            total += abs(head - req[i]);
+            head = req[i];
+        }
+    }
+
+    printf("\nTotal number of head movements = %d\n",
+           total);
+
+    return 0;
+}
+
+Q.3
+
+Oral/Viva [5 Marks]
