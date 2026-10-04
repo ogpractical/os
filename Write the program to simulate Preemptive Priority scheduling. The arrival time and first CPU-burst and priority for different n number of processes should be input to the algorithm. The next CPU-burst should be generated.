@@ -1,0 +1,129 @@
+Worked for a couple of seconds
+
+Page No. 19
+
+Q.1 Write the program to simulate Preemptive Priority scheduling. The arrival time
+and first CPU-burst and priority for different n number of processes should be
+input to the algorithm. The next CPU-burst should be generated. [15 Marks]
+
+Program Title: Preemptive Priority Scheduling
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Process {
+    int pid, at, bt, rt, priority;
+    int ct, wt, tat;
+};
+
+int main() {
+    int n, i, time = 0, completed = 0;
+    float avg_wt = 0, avg_tat = 0;
+
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    struct Process p[n];
+
+    for (i = 0; i < n; i++) {
+        p[i].pid = i + 1;
+        printf("Enter arrival time, CPU burst and priority for P%d: ",
+               p[i].pid);
+        scanf("%d %d %d", &p[i].at, &p[i].bt, &p[i].priority);
+        p[i].rt = p[i].bt;
+    }
+
+    printf("\nGantt Chart:\n");
+
+    while (completed < n) {
+        int idx = -1;
+        int highest = 9999;
+
+        for (i = 0; i < n; i++) {
+            if (p[i].at <= time && p[i].rt > 0 &&
+                p[i].priority < highest) {
+                highest = p[i].priority;
+                idx = i;
+            }
+        }
+
+        if (idx == -1) {
+            time++;
+            continue;
+        }
+
+        printf("| P%d ", p[idx].pid);
+        p[idx].rt--;
+        time++;
+
+        if (p[idx].rt == 0) {
+            p[idx].ct = time;
+            p[idx].tat = p[idx].ct - p[idx].at;
+            p[idx].wt = p[idx].tat - p[idx].bt;
+
+            avg_wt += p[idx].wt;
+            avg_tat += p[idx].tat;
+            completed++;
+        }
+    }
+
+    printf("|\n\n");
+
+    printf("Process\tAT\tBT\tPriority\tCT\tTAT\tWT\n");
+
+    for (i = 0; i < n; i++) {
+        printf("P%d\t%d\t%d\t%d\t\t%d\t%d\t%d\n",
+               p[i].pid, p[i].at, p[i].bt, p[i].priority,
+               p[i].ct, p[i].tat, p[i].wt);
+    }
+
+    printf("\nAverage Waiting Time = %.2f", avg_wt / n);
+    printf("\nAverage Turnaround Time = %.2f\n", avg_tat / n);
+
+    return 0;
+}
+
+Q.2 Write a program that demonstrates the use of nice() system call.
+After a child process is started using fork(), assign higher priority to the
+child using nice() system call [15 Marks]
+
+Program Title: Demonstration of nice() System Call
+
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+int main() {
+    pid_t pid;
+    int ret;
+
+    pid = fork();
+
+    if (pid < 0) {
+        printf("Fork failed\n");
+        return 1;
+    }
+
+    if (pid == 0) {
+        printf("Child Process\n");
+        printf("Child PID: %d\n", getpid());
+        printf("Initial Nice Value: %d\n", nice(0));
+
+        ret = nice(-5);
+
+        if (ret == -1) {
+            perror("nice");
+        } else {
+            printf("Child Nice Value after change: %d\n", ret);
+        }
+    } else {
+        wait(NULL);
+        printf("Parent Process\n");
+        printf("Parent PID: %d\n", getpid());
+    }
+
+    return 0;
+}
+
+Q.3. Oral/Viva [5 Marks]
