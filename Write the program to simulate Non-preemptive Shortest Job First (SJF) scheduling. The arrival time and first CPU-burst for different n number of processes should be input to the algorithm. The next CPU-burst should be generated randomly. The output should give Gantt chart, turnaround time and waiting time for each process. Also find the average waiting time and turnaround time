@@ -1,0 +1,249 @@
+Worked for a couple of seconds
+
+Page No. 17
+
+Q.1
+
+Write the program to simulate Non-preemptive Shortest Job First (SJF)
+scheduling. The arrival time and first CPU-burst for different n number of
+processes should be input to the algorithm. The next CPU-burst should be
+generated randomly. The output should give Gantt chart, turnaround time and
+waiting time for each process. Also find the average waiting time and
+turnaround time [15 Marks]
+
+Program Title: Non-preemptive Shortest Job First (SJF) Scheduling
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+struct Process {
+    int pid, at, bt, ct, tat, wt, done;
+};
+
+int main() {
+    int n, time = 0, completed = 0;
+    struct Process p[20];
+
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    srand(time(0));
+
+    for (int i = 0; i < n; i++) {
+        p[i].pid = i + 1;
+        p[i].done = 0;
+
+        printf("Enter arrival time and first CPU-burst for P%d: ",
+               i + 1);
+        scanf("%d%d", &p[i].at, &p[i].bt);
+    }
+
+    printf("\nGantt Chart:\n");
+
+    while (completed < n) {
+        int index = -1;
+        int shortest = 99999;
+
+        for (int i = 0; i < n; i++) {
+            if (!p[i].done && p[i].at <= time &&
+                p[i].bt < shortest) {
+                shortest = p[i].bt;
+                index = i;
+            }
+        }
+
+        if (index == -1) {
+            time++;
+            continue;
+        }
+
+        printf("| P%d ", p[index].pid);
+
+        time += p[index].bt;
+        p[index].ct = time;
+        p[index].tat = p[index].ct - p[index].at;
+        p[index].wt = p[index].tat - p[index].bt;
+        p[index].done = 1;
+
+        completed++;
+    }
+
+    printf("|\n");
+
+    float avgWT = 0, avgTAT = 0;
+
+    printf("\nPID\tAT\tBT\tCT\tTAT\tWT\n");
+
+    for (int i = 0; i < n; i++) {
+        printf("P%d\t%d\t%d\t%d\t%d\t%d\n",
+               p[i].pid, p[i].at, p[i].bt,
+               p[i].ct, p[i].tat, p[i].wt);
+
+        avgWT += p[i].wt;
+        avgTAT += p[i].tat;
+    }
+
+    printf("\nAverage Waiting Time = %.2f", avgWT / n);
+    printf("\nAverage Turnaround Time = %.2f\n", avgTAT / n);
+
+    return 0;
+}
+
+Q.2
+
+Write a program to simulate Sequential (Contiguous) file allocation method.
+Assume disk with n number of blocks. Give value of n as input. Randomly
+mark some block as allocated and accordingly maintain the list of free
+blocks. Write menu driven program with menu options as mentioned
+below and implement each option.
+a. Show Bit Vector
+b. Create New File
+c. Show Directory
+d. Delete File
+e. Exit [15 Marks]
+
+Program Title: Sequential (Contiguous) File Allocation
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+
+struct File {
+    char name[20];
+    int start;
+    int length;
+};
+
+int main() {
+    int n, choice;
+    int bit[100] = {0};
+    struct File files[50];
+    int fileCount = 0;
+
+    printf("Enter number of disk blocks: ");
+    scanf("%d", &n);
+
+    srand(time(0));
+
+    /* Randomly allocate some blocks */
+    for (int i = 0; i < n; i++)
+        bit[i] = rand() % 2;
+
+    do {
+        printf("\n--- Menu ---\n");
+        printf("1. Show Bit Vector\n");
+        printf("2. Create New File\n");
+        printf("3. Show Directory\n");
+        printf("4. Delete File\n");
+        printf("5. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        if (choice == 1) {
+            printf("Bit Vector:\n");
+            for (int i = 0; i < n; i++)
+                printf("%d ", bit[i]);
+            printf("\n");
+        }
+
+        else if (choice == 2) {
+            char name[20];
+            int length, start = -1;
+
+            printf("Enter file name: ");
+            scanf("%s", name);
+
+            printf("Enter number of blocks required: ");
+            scanf("%d", &length);
+
+            for (int i = 0; i <= n - length; i++) {
+                int free = 1;
+
+                for (int j = i; j < i + length; j++) {
+                    if (bit[j] == 1) {
+                        free = 0;
+                        break;
+                    }
+                }
+
+                if (free) {
+                    start = i;
+                    break;
+                }
+            }
+
+            if (start == -1) {
+                printf("No contiguous free blocks available.\n");
+            } else {
+                strcpy(files[fileCount].name, name);
+                files[fileCount].start = start;
+                files[fileCount].length = length;
+                fileCount++;
+
+                for (int i = start; i < start + length; i++)
+                    bit[i] = 1;
+
+                printf("File created successfully.\n");
+            }
+        }
+
+        else if (choice == 3) {
+            printf("\nFile Name\tStart\tLength\n");
+
+            for (int i = 0; i < fileCount; i++) {
+                printf("%s\t\t%d\t%d\n",
+                       files[i].name,
+                       files[i].start,
+                       files[i].length);
+            }
+        }
+
+        else if (choice == 4) {
+            char name[20];
+            int found = -1;
+
+            printf("Enter file name to delete: ");
+            scanf("%s", name);
+
+            for (int i = 0; i < fileCount; i++) {
+                if (strcmp(files[i].name, name) == 0) {
+                    found = i;
+                    break;
+                }
+            }
+
+            if (found == -1) {
+                printf("File not found.\n");
+            } else {
+                for (int i = files[found].start;
+                     i < files[found].start + files[found].length;
+                     i++)
+                    bit[i] = 0;
+
+                for (int i = found; i < fileCount - 1; i++)
+                    files[i] = files[i + 1];
+
+                fileCount--;
+
+                printf("File deleted successfully.\n");
+            }
+        }
+
+        else if (choice == 5) {
+            printf("Exit\n");
+        }
+
+        else {
+            printf("Invalid choice.\n");
+        }
+
+    } while (choice != 5);
+
+    return 0;
+}
+
+Q.3
+
+Oral/Viva [5 Marks]
