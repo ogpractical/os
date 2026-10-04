@@ -1,0 +1,242 @@
+Worked for a couple of seconds
+
+Page No. 22
+
+Q.1 Write a program to simulate Linked file allocation method. Assume disk with ‘n’
+number of blocks. Give value of ‘n’ as input. Randomly mark some block as
+allocated and accordingly maintain the list of free blocks Write menu driven
+program with menu options as mentioned below and implement each option.
+a. Show Bit Vector
+b. Create New File
+c. Show Directory
+d. Delete File
+e. Exit [15 Marks]
+
+Program Title: Linked File Allocation
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+struct File {
+    char name[20];
+    int start;
+    int blocks[100];
+    int count;
+};
+
+int main() {
+    int n, i, choice, j, block, found;
+    int bit[100] = {0};
+    int fileCount = 0;
+    struct File files[20];
+
+    printf("Enter number of blocks: ");
+    scanf("%d", &n);
+
+    srand(time(NULL));
+
+    for (i = 0; i < n; i++)
+        bit[i] = rand() % 2;
+
+    while (1) {
+        printf("\n1. Show Bit Vector");
+        printf("\n2. Create New File");
+        printf("\n3. Show Directory");
+        printf("\n4. Delete File");
+        printf("\n5. Exit");
+        printf("\nEnter choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+        case 1:
+            printf("\nBit Vector:\n");
+            for (i = 0; i < n; i++)
+                printf("%d ", bit[i]);
+            printf("\n");
+            break;
+
+        case 2:
+            if (fileCount >= 20) {
+                printf("Directory full!\n");
+                break;
+            }
+
+            printf("Enter file name: ");
+            scanf("%s", files[fileCount].name);
+
+            printf("Enter number of blocks: ");
+            scanf("%d", &files[fileCount].count);
+
+            for (i = 0; i < files[fileCount].count; i++) {
+                found = 0;
+
+                for (j = 0; j < n; j++) {
+                    if (bit[j] == 0) {
+                        block = j;
+                        bit[j] = 1;
+                        files[fileCount].blocks[i] = block;
+                        found = 1;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    printf("Not enough free blocks!\n");
+                    break;
+                }
+            }
+
+            if (i == files[fileCount].count) {
+                files[fileCount].start = files[fileCount].blocks[0];
+                fileCount++;
+                printf("File created successfully.\n");
+            }
+            break;
+
+        case 3:
+            printf("\nFile Name\tStart Block\tBlocks\n");
+
+            for (i = 0; i < fileCount; i++) {
+                printf("%s\t\t%d\t\t",
+                       files[i].name, files[i].start);
+
+                for (j = 0; j < files[i].count; j++)
+                    printf("%d ", files[i].blocks[j]);
+
+                printf("\n");
+            }
+            break;
+
+        case 4:
+            printf("Enter file name to delete: ");
+            {
+                char name[20];
+                scanf("%s", name);
+
+                found = -1;
+
+                for (i = 0; i < fileCount; i++) {
+                    if (strcmp(files[i].name, name) == 0) {
+                        found = i;
+                        break;
+                    }
+                }
+
+                if (found == -1) {
+                    printf("File not found!\n");
+                } else {
+                    for (j = 0; j < files[found].count; j++)
+                        bit[files[found].blocks[j]] = 0;
+
+                    for (i = found; i < fileCount - 1; i++)
+                        files[i] = files[i + 1];
+
+                    fileCount--;
+                    printf("File deleted successfully.\n");
+                }
+            }
+            break;
+
+        case 5:
+            exit(0);
+
+        default:
+            printf("Invalid choice!\n");
+        }
+    }
+
+    return 0;
+}
+
+Q.2 Write the program to simulate Non-preemptive Priority scheduling.
+The arrival time and first CPU-burst for different n number of processes
+should be input to the algorithm. The next CPU-burst should be generated
+randomly. The output should give Gantt chart, turnaround time and waiting
+time for each process. Also find the average waiting time and turnaround time.
+[15 Marks]
+
+Program Title: Non-preemptive Priority Scheduling
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Process {
+    int pid, at, bt, priority;
+    int ct, tat, wt, completed;
+};
+
+int main() {
+    int n, i, time = 0, completed = 0;
+    int index;
+    float avg_wt = 0, avg_tat = 0;
+
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    struct Process p[n];
+
+    for (i = 0; i < n; i++) {
+        p[i].pid = i + 1;
+        p[i].completed = 0;
+
+        printf("Enter arrival time, CPU burst and priority for P%d: ",
+               p[i].pid);
+        scanf("%d %d %d", &p[i].at, &p[i].bt, &p[i].priority);
+    }
+
+    printf("\nGantt Chart:\n");
+
+    while (completed < n) {
+        index = -1;
+
+        for (i = 0; i < n; i++) {
+            if (!p[i].completed && p[i].at <= time) {
+                if (index == -1 ||
+                    p[i].priority < p[index].priority) {
+                    index = i;
+                }
+            }
+        }
+
+        if (index == -1) {
+            time++;
+            continue;
+        }
+
+        printf("| P%d ", p[index].pid);
+
+        time += p[index].bt;
+
+        p[index].ct = time;
+        p[index].tat = p[index].ct - p[index].at;
+        p[index].wt = p[index].tat - p[index].bt;
+
+        p[index].completed = 1;
+        completed++;
+
+        avg_wt += p[index].wt;
+        avg_tat += p[index].tat;
+    }
+
+    printf("|\n\n");
+
+    printf("Process\tAT\tBT\tPriority\tCT\tTAT\tWT\n");
+
+    for (i = 0; i < n; i++) {
+        printf("P%d\t%d\t%d\t%d\t\t%d\t%d\t%d\n",
+               p[i].pid, p[i].at, p[i].bt,
+               p[i].priority, p[i].ct,
+               p[i].tat, p[i].wt);
+    }
+
+    printf("\nAverage Waiting Time = %.2f",
+           avg_wt / n);
+
+    printf("\nAverage Turnaround Time = %.2f\n",
+           avg_tat / n);
+
+    return 0;
+}
+
+Q.3. Oral/Viva [05 Marks]
