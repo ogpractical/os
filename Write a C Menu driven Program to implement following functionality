@@ -1,0 +1,218 @@
+Q.1) Write a C Menu driven Program to implement following functionality
+a) Accept Available
+b) Display Allocation, Max
+c) Display the contents of need matrix
+d) Display Available
+
+
+#include <stdio.h>
+
+int main()
+{
+    int allocation[5][3] = {
+        {2,3,2},
+        {4,0,0},
+        {5,0,4},
+        {4,3,3},
+        {2,2,4}
+    };
+
+    int max[5][3] = {
+        {9,7,5},
+        {5,2,2},
+        {1,0,4},
+        {4,4,4},
+        {6,5,5}
+    };
+
+    int available[3] = {3,3,2};
+    int need[5][3];
+    int choice, i, j;
+
+    do
+    {
+        printf("\n1. Accept Available");
+        printf("\n2. Display Allocation, Max");
+        printf("\n3. Display Need Matrix");
+        printf("\n4. Display Available");
+        printf("\n5. Exit");
+
+        printf("\nEnter choice: ");
+        scanf("%d", &choice);
+
+        switch(choice)
+        {
+            case 1:
+                printf("Enter Available A B C: ");
+                scanf("%d%d%d",
+                      &available[0],
+                      &available[1],
+                      &available[2]);
+                break;
+
+            case 2:
+                printf("\nAllocation\tMax\n");
+
+                for(i = 0; i < 5; i++)
+                {
+                    printf("P%d\t", i);
+
+                    for(j = 0; j < 3; j++)
+                        printf("%d ", allocation[i][j]);
+
+                    printf("\t");
+
+                    for(j = 0; j < 3; j++)
+                        printf("%d ", max[i][j]);
+
+                    printf("\n");
+                }
+                break;
+
+            case 3:
+                printf("\nNeed Matrix:\n");
+
+                for(i = 0; i < 5; i++)
+                {
+                    for(j = 0; j < 3; j++)
+                        need[i][j] =
+                            max[i][j] - allocation[i][j];
+
+                    printf("P%d\t", i);
+
+                    for(j = 0; j < 3; j++)
+                        printf("%d ", need[i][j]);
+
+                    printf("\n");
+                }
+                break;
+
+            case 4:
+                printf("\nAvailable: ");
+
+                for(j = 0; j < 3; j++)
+                    printf("%d ", available[j]);
+
+                printf("\n");
+                break;
+
+            case 5:
+                printf("Exit\n");
+                break;
+
+            default:
+                printf("Invalid choice\n");
+        }
+
+    } while(choice != 5);
+
+    return 0;
+}
+
+Page 1 — Q2
+
+Q.2 Write a C program that behaves like a shell which displays the command prompt ‘$’. It accepts the command, tokenize the command line and execute it by creating the child process. Also implement the additional command ‘count’ as
+
+a. $ count c filename: It will display the number of characters in given file
+
+b. $ count w filename: It will display the number of words in given file
+
+c. $ count l filename: It will display the number of lines in given file 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main()
+{
+    char command[100];
+    char *args[10];
+    int i;
+
+    while(1)
+    {
+        printf("$ ");
+        fgets(command, sizeof(command), stdin);
+
+        command[strcspn(command, "\n")] = '\0';
+
+        if(strcmp(command, "exit") == 0)
+            break;
+
+        i = 0;
+        args[i] = strtok(command, " ");
+
+        while(args[i] != NULL)
+        {
+            i++;
+            args[i] = strtok(NULL, " ");
+        }
+
+        if(args[0] == NULL)
+            continue;
+
+        if(strcmp(args[0], "count") == 0)
+        {
+            FILE *fp;
+            char ch;
+            int characters = 0;
+            int words = 0;
+            int lines = 0;
+            int inword = 0;
+
+            fp = fopen(args[2], "r");
+
+            if(fp == NULL)
+            {
+                printf("File cannot be opened\n");
+                continue;
+            }
+
+            while((ch = fgetc(fp)) != EOF)
+            {
+                characters++;
+
+                if(ch == '\n')
+                    lines++;
+
+                if(ch == ' ' || ch == '\n' || ch == '\t')
+                    inword = 0;
+                else if(inword == 0)
+                {
+                    words++;
+                    inword = 1;
+                }
+            }
+
+            fclose(fp);
+
+            if(strcmp(args[1], "c") == 0)
+                printf("Characters = %d\n", characters);
+
+            else if(strcmp(args[1], "w") == 0)
+                printf("Words = %d\n", words);
+
+            else if(strcmp(args[1], "l") == 0)
+                printf("Lines = %d\n", lines);
+        }
+        else
+        {
+            pid_t pid = fork();
+
+            if(pid == 0)
+            {
+                execvp(args[0], args);
+                printf("Command not found\n");
+                exit(1);
+            }
+            else
+            {
+                wait(NULL);
+            }
+        }
+    }
+
+    return 0;
+}
