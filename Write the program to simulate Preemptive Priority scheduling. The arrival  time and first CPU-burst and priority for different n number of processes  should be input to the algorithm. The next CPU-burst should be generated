@@ -1,0 +1,163 @@
+Q.1 Write the program to simulate Preemptive Priority scheduling. The arrival
+ time and first CPU-burst and priority for different n number of processes
+ should be input to the algorithm. The next CPU-burst should be generated
+ 
+ 
+ #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+struct P {
+    int pid, at, bt, pr, rem, ct, tat, wt;
+};
+
+int main()
+{
+    struct P p[20];
+    int n, i, t = 0, done = 0, k;
+    float awt = 0, atat = 0;
+
+    srand(time(0));
+
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    for(i = 0; i < n; i++)
+    {
+        p[i].pid = i + 1;
+
+        printf("\nP%d Arrival Time: ", i + 1);
+        scanf("%d", &p[i].at);
+
+        printf("P%d First CPU Burst: ", i + 1);
+        scanf("%d", &p[i].bt);
+
+        printf("P%d Priority: ", i + 1);
+        scanf("%d", &p[i].pr);
+
+        /* Generate next CPU burst randomly */
+        p[i].bt += rand() % 5 + 1;
+        p[i].rem = p[i].bt;
+    }
+
+    printf("\nGantt Chart:\n");
+
+    while(done < n)
+    {
+        k = -1;
+
+        for(i = 0; i < n; i++)
+        {
+            if(p[i].at <= t && p[i].rem > 0)
+            {
+                if(k == -1 || p[i].pr < p[k].pr)
+                    k = i;
+            }
+        }
+
+        if(k == -1)
+        {
+            t++;
+            continue;
+        }
+
+        printf("| P%d ", p[k].pid);
+
+        p[k].rem--;
+        t++;
+
+        if(p[k].rem == 0)
+        {
+            p[k].ct = t;
+            p[k].tat = p[k].ct - p[k].at;
+            p[k].wt = p[k].tat - p[k].bt;
+
+            awt += p[k].wt;
+            atat += p[k].tat;
+            done++;
+        }
+    }
+
+    printf("|\n");
+
+    printf("\nPID\tAT\tBT\tPR\tCT\tTAT\tWT\n");
+
+    for(i = 0; i < n; i++)
+    {
+        printf("P%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+               p[i].pid, p[i].at, p[i].bt, p[i].pr,
+               p[i].ct, p[i].tat, p[i].wt);
+    }
+
+    printf("\nAverage Waiting Time = %.2f", awt / n);
+    printf("\nAverage Turnaround Time = %.2f\n", atat / n);
+
+    return 0;
+}
+ 
+ 
+Q.2 Write the simulation program for demand paging and show the page scheduling
+and total number of page faults according the FIFO page replacement algorithm.
+Assume the memory of n frames.
+ Reference String: 3, 4, 5, 6, 3, 4, 7, 3, 4, 5, 6, 7, 2, 4, 6
+ 
+ #include <stdio.h>
+
+int main()
+{
+    int ref[] = {3,4,5,6,3,4,7,3,4,5,6,7,2,4,6};
+    int n = 15, f, frame[10];
+    int i, j, pos = 0, hit, faults = 0;
+
+    printf("Enter number of frames: ");
+    scanf("%d", &f);
+
+    for(i = 0; i < f; i++)
+        frame[i] = -1;
+
+    printf("\nPage\tFrames\t\tStatus\n");
+
+    for(i = 0; i < n; i++)
+    {
+        hit = 0;
+
+        /* Check page hit */
+        for(j = 0; j < f; j++)
+        {
+            if(frame[j] == ref[i])
+            {
+                hit = 1;
+                break;
+            }
+        }
+
+        /* Page Fault */
+        if(!hit)
+        {
+            frame[pos] = ref[i];
+            pos = (pos + 1) % f;
+            faults++;
+        }
+
+        printf("%d\t", ref[i]);
+
+        for(j = 0; j < f; j++)
+        {
+            if(frame[j] == -1)
+                printf("- ");
+            else
+                printf("%d ", frame[j]);
+        }
+
+        if(hit)
+            printf("\tHit");
+        else
+            printf("\tPage Fault");
+
+        printf("\n");
+    }
+
+    printf("\nTotal Page Faults = %d\n", faults);
+
+    return 0;
+}
