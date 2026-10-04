@@ -1,0 +1,190 @@
+Worked for a couple of seconds
+
+Page No. 23
+
+Q.1 Implement the C program to accept n integers to be sorted. Main function
+creates child process using fork system call. Parent process sorts the integers
+using bubble sort and waits for child process using wait system call. Child
+process sorts the integers using insertion sort [15 Marks]
+
+Program Title: Bubble Sort and Insertion Sort using fork()
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+void bubbleSort(int a[], int n) {
+    int i, j, temp;
+
+    for (i = 0; i < n - 1; i++) {
+        for (j = 0; j < n - i - 1; j++) {
+            if (a[j] > a[j + 1]) {
+                temp = a[j];
+                a[j] = a[j + 1];
+                a[j + 1] = temp;
+            }
+        }
+    }
+}
+
+void insertionSort(int a[], int n) {
+    int i, j, key;
+
+    for (i = 1; i < n; i++) {
+        key = a[i];
+        j = i - 1;
+
+        while (j >= 0 && a[j] > key) {
+            a[j + 1] = a[j];
+            j--;
+        }
+
+        a[j + 1] = key;
+    }
+}
+
+void display(int a[], int n) {
+    int i;
+
+    for (i = 0; i < n; i++)
+        printf("%d ", a[i]);
+
+    printf("\n");
+}
+
+int main() {
+    int n, i;
+    pid_t pid;
+
+    printf("Enter number of integers: ");
+    scanf("%d", &n);
+
+    int a[n], b[n];
+
+    printf("Enter integers:\n");
+    for (i = 0; i < n; i++) {
+        scanf("%d", &a[i]);
+        b[i] = a[i];
+    }
+
+    pid = fork();
+
+    if (pid < 0) {
+        printf("Fork failed\n");
+        return 1;
+    }
+
+    if (pid == 0) {
+        printf("\nChild Process - Insertion Sort\n");
+
+        insertionSort(b, n);
+
+        printf("Sorted integers: ");
+        display(b, n);
+    }
+    else {
+        printf("\nParent Process - Bubble Sort\n");
+
+        bubbleSort(a, n);
+
+        printf("Sorted integers: ");
+        display(a, n);
+
+        wait(NULL);
+        printf("Child process completed.\n");
+    }
+
+    return 0;
+}
+
+Q.2 Write the program to simulate Non-preemptive Shortest Job First (SJF)
+scheduling. The arrival time and first CPU-burst for different n number of
+processes should be input to the algorithm. The next CPU-burst should be
+generated randomly. The output should give Gantt chart, turnaround time
+and waiting time for each process. Also find the average waiting time
+and turnaround time. [15 Marks]
+
+Program Title: Non-preemptive Shortest Job First (SJF) Scheduling
+
+#include <stdio.h>
+
+struct Process {
+    int pid, at, bt;
+    int ct, tat, wt, completed;
+};
+
+int main() {
+    int n, i, time = 0, completed = 0;
+    int index;
+    float avg_wt = 0, avg_tat = 0;
+
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    struct Process p[n];
+
+    for (i = 0; i < n; i++) {
+        p[i].pid = i + 1;
+        p[i].completed = 0;
+
+        printf("Enter arrival time and CPU burst for P%d: ",
+               p[i].pid);
+        scanf("%d %d", &p[i].at, &p[i].bt);
+    }
+
+    printf("\nGantt Chart:\n");
+
+    while (completed < n) {
+        index = -1;
+
+        for (i = 0; i < n; i++) {
+            if (!p[i].completed && p[i].at <= time) {
+                if (index == -1 ||
+                    p[i].bt < p[index].bt) {
+                    index = i;
+                }
+            }
+        }
+
+        if (index == -1) {
+            time++;
+            continue;
+        }
+
+        printf("| P%d ", p[index].pid);
+
+        time += p[index].bt;
+
+        p[index].ct = time;
+        p[index].tat = p[index].ct - p[index].at;
+        p[index].wt = p[index].tat - p[index].bt;
+
+        p[index].completed = 1;
+        completed++;
+
+        avg_wt += p[index].wt;
+        avg_tat += p[index].tat;
+    }
+
+    printf("|\n\n");
+
+    printf("Process\tAT\tBT\tCT\tTAT\tWT\n");
+
+    for (i = 0; i < n; i++) {
+        printf("P%d\t%d\t%d\t%d\t%d\t%d\n",
+               p[i].pid, p[i].at, p[i].bt,
+               p[i].ct, p[i].tat, p[i].wt);
+    }
+
+    printf("\nAverage Waiting Time = %.2f",
+           avg_wt / n);
+
+    printf("\nAverage Turnaround Time = %.2f\n",
+           avg_tat / n);
+
+    return 0;
+}
+
+Q.3. Oral/Viva [5 Marks]
