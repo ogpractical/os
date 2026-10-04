@@ -1,0 +1,238 @@
+Worked for 4s
+
+Page No. 9
+
+Q.1
+
+Q.1 Write the simulation program for demand paging and show the page
+scheduling and total number of page faults according the optimal page
+replacement algorithm. Assume the memory of ‘n’ frames.
+Reference String: 8, 5, 7, 8, 5, 7, 2, 3, 7, 3, 5, 9, 4, 6, 2 [15 Marks ]
+
+Program Title: Optimal Page Replacement
+
+#include <stdio.h>
+
+int findOptimal(int pages[], int frames[], int n, int index, int frameCount)
+{
+    int farthest = index;
+    int pos = -1;
+    int i, j;
+
+    for(i = 0; i < frameCount; i++)
+    {
+        for(j = index + 1; j < n; j++)
+        {
+            if(frames[i] == pages[j])
+            {
+                if(j > farthest)
+                {
+                    farthest = j;
+                    pos = i;
+                }
+                break;
+            }
+        }
+
+        if(j == n)
+            return i;
+    }
+
+    if(pos == -1)
+        return 0;
+
+    return pos;
+}
+
+int main()
+{
+    int pages[] = {8,5,7,8,5,7,2,3,7,3,5,9,4,6,2};
+    int n = sizeof(pages) / sizeof(pages[0]);
+
+    int frameCount;
+    int frames[20];
+    int i, j, found, pos;
+    int pageFaults = 0;
+
+    printf("Enter number of frames: ");
+    scanf("%d", &frameCount);
+
+    for(i = 0; i < frameCount; i++)
+        frames[i] = -1;
+
+    printf("\nPage Scheduling:\n");
+
+    for(i = 0; i < n; i++)
+    {
+        found = 0;
+
+        for(j = 0; j < frameCount; j++)
+        {
+            if(frames[j] == pages[i])
+            {
+                found = 1;
+                break;
+            }
+        }
+
+        if(found == 0)
+        {
+            pageFaults++;
+
+            for(j = 0; j < frameCount; j++)
+            {
+                if(frames[j] == -1)
+                {
+                    pos = j;
+                    break;
+                }
+            }
+
+            if(j == frameCount)
+                pos = findOptimal(pages, frames, n, i, frameCount);
+
+            frames[pos] = pages[i];
+        }
+
+        printf("%d\t", pages[i]);
+
+        for(j = 0; j < frameCount; j++)
+        {
+            if(frames[j] == -1)
+                printf("- ");
+            else
+                printf("%d ", frames[j]);
+        }
+
+        if(found == 0)
+            printf("Page Fault");
+
+        printf("\n");
+    }
+
+    printf("\nTotal number of page faults = %d\n", pageFaults);
+
+    return 0;
+}
+
+
+---
+
+Q.2
+
+Q.2 Write the program to simulate Non-preemptive Shortest Job First (SJF) scheduling.
+the arrival time and first CPU burst for different n number of processes should be
+input to the algorithm. The next CPU burst should be generated randomly. The
+output should give Gantt chart, turnaround time and waiting time for each process.
+Also find the average waiting time and turnaround time. [15 marks]
+
+Program Title: Non-preemptive SJF Scheduling
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Process
+{
+    int pid;
+    int at;
+    int bt;
+    int ct;
+    int tat;
+    int wt;
+    int done;
+};
+
+int main()
+{
+    int n, i, completed = 0;
+    int time = 0;
+    float avgWT = 0, avgTAT = 0;
+
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    struct Process p[n];
+
+    for(i = 0; i < n; i++)
+    {
+        p[i].pid = i + 1;
+
+        printf("Enter arrival time of P%d: ", i + 1);
+        scanf("%d", &p[i].at);
+
+        printf("Enter first CPU burst of P%d: ", i + 1);
+        scanf("%d", &p[i].bt);
+
+        p[i].done = 0;
+    }
+
+    printf("\nGantt Chart:\n");
+
+    while(completed < n)
+    {
+        int index = -1;
+        int shortest = 99999;
+
+        for(i = 0; i < n; i++)
+        {
+            if(p[i].done == 0 && p[i].at <= time)
+            {
+                if(p[i].bt < shortest)
+                {
+                    shortest = p[i].bt;
+                    index = i;
+                }
+            }
+        }
+
+        if(index == -1)
+        {
+            time++;
+            continue;
+        }
+
+        printf("| P%d ", p[index].pid);
+
+        time += p[index].bt;
+
+        p[index].ct = time;
+        p[index].tat = p[index].ct - p[index].at;
+        p[index].wt = p[index].tat - p[index].bt;
+
+        p[index].done = 1;
+        completed++;
+    }
+
+    printf("|\n");
+
+    printf("\nProcess\tAT\tBT\tCT\tTAT\tWT\n");
+
+    for(i = 0; i < n; i++)
+    {
+        printf("P%d\t%d\t%d\t%d\t%d\t%d\n",
+               p[i].pid,
+               p[i].at,
+               p[i].bt,
+               p[i].ct,
+               p[i].tat,
+               p[i].wt);
+
+        avgWT += p[i].wt;
+        avgTAT += p[i].tat;
+    }
+
+    avgWT /= n;
+    avgTAT /= n;
+
+    printf("\nAverage Waiting Time = %.2f", avgWT);
+    printf("\nAverage Turnaround Time = %.2f\n", avgTAT);
+
+    return 0;
+}
+
+
+---
+
+Q.3
+
+Q.3. Oral/Viva [5 Marks]
