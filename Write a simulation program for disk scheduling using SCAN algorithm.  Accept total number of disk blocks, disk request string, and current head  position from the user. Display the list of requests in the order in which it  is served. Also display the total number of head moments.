@@ -1,0 +1,182 @@
+Q.1 Write a simulation program for disk scheduling using SCAN algorithm.
+ Accept total number of disk blocks, disk request string, and current head
+ position from the user. Display the list of requests in the order in which it
+ is served. Also display the total number of head moments.
+ 10, 25, 75, 90, 130, 145, 180, 55
+ Starting Head position= 80
+ Direction: Left 
+ 
+ #include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    int n, req[50], head, i, j, temp;
+    int total = 0, disk;
+
+    printf("Enter total number of disk blocks: ");
+    scanf("%d", &disk);
+
+    printf("Enter number of requests: ");
+    scanf("%d", &n);
+
+    printf("Enter request string:\n");
+    for(i = 0; i < n; i++)
+        scanf("%d", &req[i]);
+
+    printf("Enter current head position: ");
+    scanf("%d", &head);
+
+    /* Sort requests */
+    for(i = 0; i < n-1; i++)
+    {
+        for(j = i+1; j < n; j++)
+        {
+            if(req[i] > req[j])
+            {
+                temp = req[i];
+                req[i] = req[j];
+                req[j] = temp;
+            }
+        }
+    }
+
+    printf("\nSCAN Order: %d", head);
+
+    /* Move Left */
+    for(i = n-1; i >= 0; i--)
+    {
+        if(req[i] < head)
+        {
+            total += abs(head - req[i]);
+            head = req[i];
+            printf(" -> %d", head);
+        }
+    }
+
+    /* Go to beginning of disk */
+    total += head;
+    head = 0;
+    printf(" -> %d", head);
+
+    /* Move Right */
+    for(i = 0; i < n; i++)
+    {
+        if(req[i] > head)
+        {
+            total += abs(head - req[i]);
+            head = req[i];
+            printf(" -> %d", head);
+        }
+    }
+
+    printf("\n\nTotal Head Movement = %d\n", total);
+
+    return 0;
+}
+ 
+ 
+Q.2 Write the simulation program for demand paging and show the page
+scheduling and total number of page faults according the MFU
+page replacement algorithm. Assume the memory of n frames.
+ Reference String:8, 5, 7, 8, 5, 7, 2, 3, 7, 3, 5, 9, 4, 6, 2
+ 
+ #include <stdio.h>
+
+int main()
+{
+    int n, f, i, j, pos, max, hit;
+    int ref[50], frame[10], count[10];
+    int faults = 0;
+
+    printf("Enter number of pages: ");
+    scanf("%d", &n);
+
+    printf("Enter reference string:\n");
+    for(i = 0; i < n; i++)
+        scanf("%d", &ref[i]);
+
+    printf("Enter number of frames: ");
+    scanf("%d", &f);
+
+    for(i = 0; i < f; i++)
+    {
+        frame[i] = -1;
+        count[i] = 0;
+    }
+
+    printf("\nPage\tFrames\t\tStatus\n");
+
+    for(i = 0; i < n; i++)
+    {
+        hit = 0;
+
+        /* Check page hit */
+        for(j = 0; j < f; j++)
+        {
+            if(frame[j] == ref[i])
+            {
+                count[j]++;
+                hit = 1;
+                break;
+            }
+        }
+
+        /* Page Fault */
+        if(hit == 0)
+        {
+            faults++;
+            pos = -1;
+
+            /* Find empty frame */
+            for(j = 0; j < f; j++)
+            {
+                if(frame[j] == -1)
+                {
+                    pos = j;
+                    break;
+                }
+            }
+
+            /* Find MFU page */
+            if(pos == -1)
+            {
+                max = count[0];
+                pos = 0;
+
+                for(j = 1; j < f; j++)
+                {
+                    if(count[j] > max)
+                    {
+                        max = count[j];
+                        pos = j;
+                    }
+                }
+            }
+
+            frame[pos] = ref[i];
+            count[pos] = 1;
+        }
+
+        printf("%d\t", ref[i]);
+
+        for(j = 0; j < f; j++)
+        {
+            if(frame[j] == -1)
+                printf("- ");
+            else
+                printf("%d ", frame[j]);
+        }
+
+        if(hit)
+            printf("\tHit");
+        else
+            printf("\tPage Fault");
+
+        printf("\n");
+    }
+
+    printf("\nTotal Page Faults = %d\n", faults);
+
+    return 0;
+}
