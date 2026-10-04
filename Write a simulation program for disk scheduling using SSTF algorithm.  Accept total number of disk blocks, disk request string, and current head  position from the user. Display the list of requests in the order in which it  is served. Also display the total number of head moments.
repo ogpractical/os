@@ -1,0 +1,163 @@
+Q.1 Write a simulation program for disk scheduling using SSTF algorithm.
+ Accept total number of disk blocks, disk request string, and current head
+ position from the user. Display the list of requests in the order in which it
+ is served. Also display the total number of head moments.
+30, 10, 60, 95, 120, 150, 175
+Start Head Position: 50
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    int n, i, head, total = 0;
+    int req[50], done[50] = {0};
+    int min, pos, distance;
+
+    printf("Enter total number of disk requests: ");
+    scanf("%d", &n);
+
+    printf("Enter request string:\n");
+    for(i = 0; i < n; i++)
+        scanf("%d", &req[i]);
+
+    printf("Enter current head position: ");
+    scanf("%d", &head);
+
+    printf("\nSSTF Order: %d", head);
+
+    for(i = 0; i < n; i++)
+    {
+        min = 9999;
+        pos = -1;
+
+        /* Find nearest request */
+        for(int j = 0; j < n; j++)
+        {
+            if(done[j] == 0)
+            {
+                distance = abs(head - req[j]);
+
+                if(distance < min)
+                {
+                    min = distance;
+                    pos = j;
+                }
+            }
+        }
+
+        done[pos] = 1;
+        total += abs(head - req[pos]);
+        head = req[pos];
+
+        printf(" -> %d", head);
+    }
+
+    printf("\n\nTotal Head Movement = %d\n", total);
+
+    return 0;
+}
+
+
+Q.2 Write the simulation program to implement demand paging
+ and show the page scheduling and total number of page faults according
+ to the LRU (using counter method) page replacement algorithm. Assume
+ the memory of n frames.
+ Reference String : 3,5,7,2,5,1,2,3,1,3,5,3,1,6,2 
+ 
+ #include <stdio.h>
+
+int main()
+{
+    int ref[] = {3,5,7,2,5,1,2,3,1,3,5,3,1,6,2};
+    int n = 15, f;
+    int frame[10], counter[10];
+    int i, j, pos, min, hit;
+    int faults = 0, time = 0;
+
+    printf("Enter number of frames: ");
+    scanf("%d", &f);
+
+    for(i = 0; i < f; i++)
+    {
+        frame[i] = -1;
+        counter[i] = 0;
+    }
+
+    printf("\nPage\tFrames\t\tStatus\n");
+
+    for(i = 0; i < n; i++)
+    {
+        hit = 0;
+        time++;
+
+        /* Check page hit */
+        for(j = 0; j < f; j++)
+        {
+            if(frame[j] == ref[i])
+            {
+                hit = 1;
+                counter[j] = time;
+                break;
+            }
+        }
+
+        /* Page Fault */
+        if(hit == 0)
+        {
+            faults++;
+            pos = -1;
+
+            /* Find empty frame */
+            for(j = 0; j < f; j++)
+            {
+                if(frame[j] == -1)
+                {
+                    pos = j;
+                    break;
+                }
+            }
+
+            /* Find LRU page */
+            if(pos == -1)
+            {
+                min = counter[0];
+                pos = 0;
+
+                for(j = 1; j < f; j++)
+                {
+                    if(counter[j] < min)
+                    {
+                        min = counter[j];
+                        pos = j;
+                    }
+                }
+            }
+
+            frame[pos] = ref[i];
+            counter[pos] = time;
+        }
+
+        printf("%d\t", ref[i]);
+
+        for(j = 0; j < f; j++)
+        {
+            if(frame[j] == -1)
+                printf("- ");
+            else
+                printf("%d ", frame[j]);
+        }
+
+        if(hit)
+            printf("\tHit");
+        else
+            printf("\tPage Fault");
+
+        printf("\n");
+    }
+
+    printf("\nTotal Page Faults = %d\n", faults);
+
+    return 0;
+}
